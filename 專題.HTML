@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詐騙防範全面偵測站</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="side-menu" id="sideMenu">
+        <span class="close-btn" onclick="toggleMenu()">&times;</span>
+        <ul class="side-nav-links">
+            <li onclick="goHome(); toggleMenu()">🏠 首頁</li>
+            <li onclick="alert('功能開發中！'); toggleMenu()">📚 防詐知識</li>
+            <li onclick="window.open('https://165.npa.gov.tw/', '_blank'); toggleMenu()">🚓 165專區</li>
+        </ul>
+    </div>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <div class="app-container">
+        
+        <nav class="top-nav">
+            <div class="hamburger-icon" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-logo">🛡️ 防詐偵測站</div>
+            <div style="width: 30px;"></div> </nav>
+
+        <div id="home-page">
+            <h1>🛡️ 秒讀訊息真偽</h1>
+            <h1>遠離受騙風險</h1>
+            <p>數位時代，警覺第一<br>貼上可疑訊息，為您即時診斷</p>
+
+            <img src="hero-image.png" alt="反詐騙圖" class="hero-img">
+
+            <button class="main-btn" onclick="startCheck()">執行即時風險分析</button>
+            
+            <div class="link-165" onclick="window.open('https://165.npa.gov.tw/', '_blank')">
+                前往 165 反詐騙官方網站
+            </div>
+        </div>
+
+        <div id="checker-page" style="display: none;">
+            <div class="header">
+                <span class="back-btn" onclick="goHome()">◀ 返回</span>
+                <span>秒懂詐騙：AI 識破專家</span>
+                <div style="width: 40px;"></div>
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                <div class="bubble bot">您好！請貼上您收到的訊息內容，或是點擊下方的快捷鍵測試常見詐騙案例。</div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-row">
+                    <input type="text" id="userInput" placeholder="在此輸入訊息...">
+                    <button class="send-btn" onclick="analyzeMsg()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 變數宣告 ---
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        let isTyping = false; 
+
+        // --- 1. 漢堡選單開關邏輯 ---
+        function toggleMenu() {
+            const sideMenu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            sideMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+            // 修改後的畫面切換邏輯
+        function startCheck() {
+            // 進入分析頁面：隱藏首頁與導覽列
+            document.getElementById('home-page').style.display = 'none';
+            document.querySelector('.top-nav').style.display = 'none'; // 隱藏漢堡選單列
+            document.getElementById('checker-page').style.display = 'flex';
+        }
+
+        function goHome() {
+            // 回到首頁：顯示首頁與導覽列
+            document.getElementById('home-page').style.display = 'flex';
+            document.querySelector('.top-nav').style.display = 'flex'; // 顯示漢堡選單列
+            document.getElementById('checker-page').style.display = 'none';
+        }
+        // --- 3. 訊息分析邏輯 ---
+        function analyzeMsg() {
+            const text = userInput.value.trim();
+            if (!text || isTyping) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+            isTyping = true; 
+
+            setTimeout(() => {
+                const keywords = ['中獎', '領取', '連結', '帳戶異常', '解除', '投資', 'LINE'];
+                let found = keywords.filter(k => text.includes(k));
+
+                if (found.length > 0) {
+                    appendMessage(`🚨 注意！偵測到可疑字眼：[${found.join(', ')}]。這具備強烈的詐騙特徵！`, 'alert');
+                } else {
+                    appendMessage(`✅ 目前未偵測到明顯詐騙特徵，但仍請保持警覺。`, 'bot');
+                }
+                
+                setTimeout(() => { isTyping = false; }, 1500);
+            }, 800);
+        }
+
+        // --- 4. 打字機效果 ---
+        function appendMessage(content, type) {
+            const div = document.createElement('div');
+            div.className = `bubble ${type}`;
+            chatBox.appendChild(div);
+
+            if (type === 'user') {
+                div.innerText = content;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                let i = 0;
+                div.innerText = ''; 
+                function typeWriter() {
+                    if (i < content.length) {
+                        div.innerText += content.charAt(i);
+                        i++;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        setTimeout(typeWriter, 30);
+                    }
+                }
+                typeWriter();
+            }
+        }
+
+        // 支援 Enter 鍵
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                analyzeMsg();
+            }
+        });
+    </script>
+</body>
+</html>
